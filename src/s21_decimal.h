@@ -1,11 +1,11 @@
 #ifndef S21_DECIMAL_H
 #define S21_DECIMAL_H
 
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 
 typedef struct {
-    unsigned int bits[4];
+  unsigned int bits[4];
 } s21_decimal;
 
 void s21_ZeroDecimal(s21_decimal *dst);
