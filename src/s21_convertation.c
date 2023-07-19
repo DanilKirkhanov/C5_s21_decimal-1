@@ -57,45 +57,54 @@ int s21_from_decimal_to_float(s21_decimal src, float *dst) {
 int s21_from_float_to_decimal(float src, s21_decimal *dst) {
   s21_ZeroDecimal(dst);
   int res = 0;
-  if ((dst == NULL || src != src) || (fabs(src) < powl(10.0, -28.0)) ||
-      (fabs(src) >= powl(2.0, 96.0))) {
+  if (dst == NULL || src != src)
     res = 1;
-  } else {
-    double number = fabs((double)src);
+  else if ((fabsf(src) < 1e-28) || (fabsf(src) >= powf(2, 96)))
+    res = 1;
+  else {
     int scale = 0;
-    // while (scale < 28 && number < 1.0) {
-    //   number = number * 10;
-    //   scale++;
-    // }
-      while (number / pow(10.0, 7) < 1.0 && scale < 28) {
+    double number = fabs(src);
+    while (number < 1.0 && scale < 28) {
       number *= 10;
       scale++;
     }
-      if (fmod(floor(number), 10.0) >= 5) {
+    while (number / 1e7 < 1.0 && scale < 28) {
+      number *= 10;
+      scale++;
+    }
+    number = floor(number);
+    if (fmod(number, 10.0) >= 5) {
       number += 10 - fmod(number, 10.0);
       number = round(number);
     }
-      if (scale > 0) {
+    if (scale > 0) {
       number /= 10;
       scale--;
     }
-      while (scale > 0 && (fmod(number, 10.0) < pow(10.0, -8))) {
+    while (scale > 0 && (fmod(number, 10.0) < 1e-8)) {
       number /= 10;
       number = round(number);
       scale--;
     }
-    for (int i = 0; i < 96; i++)
-    s21_setBit(dst, i, s21_getBitToFloat(number, i));
-    if (src < 0) s21_setSign(dst, 1);
+    for (int i = 0; i < 96; i++) {
+      s21_setBit(dst, i, s21_GetBitToFloat(number, i));
+    }
+    if (src < 0) {
+      s21_setSign(dst, 1);
+    }
     s21_setScale(dst, scale);
   }
   return res;
 }
 
-int s21_getBit(s21_decimal num, int place) {
-  unsigned int mask = 1u << (place % 32);
-  int result = (num.bits[place / 32] & mask) != 0;
-  return result;
+int s21_getBit(s21_decimal dec, int index) {
+  int error = -1;
+  if (index >= 0 && index <= 127) {
+    int num_int = index / 32;
+    int num_bit = index % 32;
+    error = !!(dec.bits[num_int] & (1u << num_bit));
+  }
+  return error;
 }
 
 int s21_getSign(s21_decimal value) {
@@ -113,15 +122,16 @@ void s21_setBit(s21_decimal *value, int index, int bit) {
 
 void s21_setSign(s21_decimal *value, int sign) { s21_setBit(value, 127, sign); }
 
-void s21_setScale(s21_decimal *num, int exp) {
-  int mask = exp << 16;
-  num->bits[3] = mask;
+void s21_setScale(s21_decimal *dec, int scale) {
+  for (int i = 112; i < 119; i++) {
+    s21_setBit(dec, i, scale & 1);
+    scale >>= 1;
+  }
 }
 
-int s21_getScale(s21_decimal dst) {
-  int mask = 127 << 16;
-  int scale = (dst.bits[3] & mask) >> 16;
-  return scale;
+int s21_getScale(s21_decimal dec) {
+  int result = (char)(dec.bits[3] >> 16);
+  return result;
 }
 
 void s21_setScaleToZero(s21_decimal *number) {
@@ -135,4 +145,10 @@ void s21_ZeroDecimal(s21_decimal *dst) {
   dst->bits[1] = 0;
   dst->bits[2] = 0;
   dst->bits[3] = 0;
+}
+int s21_GetBitToFloat(double number, int bit_number) {
+  int result = -1;
+  for (int i = 0; i < bit_number; i++) number = floor(number / 2);
+  result = (int)fmod(number, 2.0);
+  return result;
 }
