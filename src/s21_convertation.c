@@ -152,3 +152,32 @@ int s21_GetBitToFloat(double number, int bit_number) {
   result = (int)fmod(number, 2.0);
   return result;
 }
+
+void s21_scaleEqul(s21_decimal *value_1, s21_decimal *value_2) {
+    int scale_diff = s21_getScale(*value_1) - s21_getScale(*value_2);
+    if (scale_diff > 0) {
+        for (int i = 0; i < scale_diff; i++) {
+            //div_ten(value_2);
+        }
+        s21_setScale(value_2, s21_getScale(*value_1));
+    } else if (scale_diff < 0) {
+        for (int i = 0; i < -scale_diff; i++) {
+            //div_ten(value_1);
+        }
+        s21_setScale(value_1, s21_getScale(*value_2));
+    }
+}
+
+int s21_equalWithoutSign(s21_decimal value_1, s21_decimal value_2) {
+  int res;
+  if (value_1.bits[2] != value_2.bits[2]) {
+    res = 0;
+  } else if (value_1.bits[1] != value_2.bits[1]) {
+    res = 0;
+  } else if (value_1.bits[0] != value_2.bits[0]) {
+    res = 0;
+  } else {
+    res = 1;
+  }
+  return res;
+}
