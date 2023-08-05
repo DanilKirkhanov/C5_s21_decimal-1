@@ -157,12 +157,12 @@ void s21_scaleEqul(s21_decimal *value_1, s21_decimal *value_2) {
     int scale_diff = s21_getScale(*value_1) - s21_getScale(*value_2);
     if (scale_diff > 0) {
         for (int i = 0; i < scale_diff; i++) {
-            //div_ten(value_2);
+           *value_2 = s21_div_integer(*value_2, 10);
         }
         s21_setScale(value_2, s21_getScale(*value_1));
     } else if (scale_diff < 0) {
         for (int i = 0; i < -scale_diff; i++) {
-            //div_ten(value_1);
+           *value_1 = s21_div_integer(*value_1, 10);
         }
         s21_setScale(value_1, s21_getScale(*value_2));
     }
@@ -179,5 +179,49 @@ int s21_equalWithoutSign(s21_decimal value_1, s21_decimal value_2) {
   } else {
     res = 1;
   }
+  return res;
+}
+
+int s21_less_without_mod(s21_decimal dec_1, s21_decimal dec_2) {
+  int result;
+  if (dec_1.bits[0] < dec_2.bits[0]) {
+    result = 1;
+  } else if (dec_1.bits[0] > dec_2.bits[0]) {
+    result = 0;
+  } else {
+    if (dec_1.bits[1] < dec_2.bits[1]) {
+      result = 1;
+    } else if (dec_1.bits[1] > dec_2.bits[1]) {
+      result = 0;
+    } else {
+      if (dec_1.bits[2] < dec_2.bits[2]) {
+        result = 1;
+      } else if (dec_1.bits[2] > dec_2.bits[2]) {
+        result = 0;
+      } else {
+        result = 0;
+      }
+    }
+  }
+  return result;
+}
+
+s21_decimal s21_div_integer(s21_decimal src, int div) {
+  s21_decimal res = {{0, 0, 0, 0}};
+  //s21_null_decimal(&res);
+  long unsigned int remainder = src.bits[2] % div;  // остаток
+  res.bits[2] = src.bits[2] / div;
+  for (int i = 1; i >= 0; i--) {
+    long unsigned int tempbit =
+        (long unsigned int)src.bits[i] +
+        (remainder * pow(2, 32));  // временный младший бит чтобы не было
+                                   // переполнения при добавлении остатка
+    remainder = tempbit % div;
+    tempbit -= remainder;  // округяем чтобы при делении на 10 число не
+                           // округлилось до большего
+    res.bits[i] = tempbit / div;
+  }
+  res.bits[0] += remainder / div;
+  res.bits[3] = src.bits[3];
   return res;
 }

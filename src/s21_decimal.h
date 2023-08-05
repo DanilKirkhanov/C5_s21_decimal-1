@@ -7,8 +7,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-s21_decimal zero = {0, 0};
-
 typedef struct {
   unsigned int bits[4];
 } s21_decimal;
@@ -28,6 +26,8 @@ int s21_from_float_to_decimal(float src, s21_decimal *dst);
 int s21_GetBitToFloat(double number, int bit_number);
 void s21_scaleEqul(s21_decimal *value_1, s21_decimal *value_2);
 int s21_equalWithoutSign(s21_decimal value_1, s21_decimal value_2);
+int s21_less_without_mod(s21_decimal dec_1, s21_decimal dec_2);
+s21_decimal s21_div_integer(s21_decimal src, int div);
 
 int s21_is_equal(s21_decimal dec_1, s21_decimal dec_2); // не готов :(
 int s21_is_less(s21_decimal dec_1, s21_decimal dec_2); // не готов :(
