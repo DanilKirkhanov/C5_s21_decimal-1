@@ -35,5 +35,22 @@ int s21_is_greater_or_equal(s21_decimal dec_1, s21_decimal dec_2);
 int s21_is_not_equal(s21_decimal dec_1, s21_decimal dec_2);
 int s21_is_greater(s21_decimal dec_1, s21_decimal dec_2);
 int s21_is_less_or_equal(s21_decimal dec_1, s21_decimal dec_2);
+int s21_truncate(s21_decimal value, s21_decimal* result);
+
+int s21_floor(s21_decimal value, s21_decimal* result);
+int s21_round(s21_decimal value, s21_decimal* result);
+int s21_truncate(s21_decimal value, s21_decimal* result);
+int s21_negate(s21_decimal value, s21_decimal* result);
+void printf_decimal(s21_decimal dec);  // вывести полный децимал
+void printf_binary(int src);           // вывести один инт
+void printf_long_binary(long int src);  // вывести длинный инт
+int get_bit(s21_decimal src, int index);  // взять бит из децимала (от 0 до 127)
+void set_bit(s21_decimal* src, int index,
+             int bit);  // назначить бит (0 или 1) из децимала (от 0 до 127)
+void set_scale(s21_decimal* dec, int scale);  // назначить степень
+int get_scale(s21_decimal src);               // узнать степень
+void div_by_10(s21_decimal* src,
+               int scale);  // деление на 10 n раз, степень автоматически
+                            // уменьшается на n раз
 
 #endif  // S21_DECIMAL_H

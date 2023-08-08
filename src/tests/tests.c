@@ -4,8 +4,9 @@ int main(void) {
   int failed = 0;
   int all = 0;
   int success = 0;
-  Suite *list_cases[] = {test_convertation(), NULL};
+  Suite *list_cases[] = {test_convertation(), test_comparsion(), NULL};
 
+    
   for (int i = 0; list_cases[i] != NULL; i++) {
     SRunner *sr = srunner_create(list_cases[i]);
 
