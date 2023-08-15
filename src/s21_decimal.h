@@ -53,4 +53,6 @@ void div_by_10(s21_decimal* src,
                int scale);  // деление на 10 n раз, степень автоматически
                             // уменьшается на n раз
 
+void s21_add_1(s21_decimal *result);
+
 #endif  // S21_DECIMAL_H

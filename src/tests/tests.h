@@ -8,5 +8,6 @@
 
 Suite *test_convertation();
 Suite *test_comparsion();
+Suite *test_other();
 
 #endif
