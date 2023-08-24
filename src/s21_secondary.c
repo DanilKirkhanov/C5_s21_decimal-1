@@ -74,4 +74,3 @@ void div_by_10(s21_decimal* src, int scale) {
     }
   }
 }
-

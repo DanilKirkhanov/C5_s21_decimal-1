@@ -18,31 +18,30 @@ int s21_truncate(s21_decimal value, s21_decimal* result) {
 }
 
 int s21_floor(s21_decimal value, s21_decimal* result) {
-    int err = 0;
-    if (!result)
-        err = 1;
+  int err = 0;
+  if (!result)
+    err = 1;
+  else {
+    if (get_scale(value) == 0)
+      *result = value;
     else {
-        if (get_scale(value) == 0)
-            *result = value;
-        else {
-            s21_truncate(value, result);
-            if (get_bit(value, 127))
-               s21_add_1(result);  // вычитание 1;
-        }
+      s21_truncate(value, result);
+      if (get_bit(value, 127)) s21_add_1(result);  // вычитание 1;
     }
-    return err;
+  }
+  return err;
 }
 
-void s21_add_1(s21_decimal *result) {
-    if ((unsigned long int)result->bits[0] != 4294967295)
-        result->bits[0] += 1;
+void s21_add_1(s21_decimal* result) {
+  if ((unsigned long int)result->bits[0] != 4294967295)
+    result->bits[0] += 1;
+  else {
+    result->bits[0] = 0;
+    if ((unsigned long int)result->bits[1] != 4294967295)
+      result->bits[1] += 1;
     else {
-        result->bits[0] = 0;
-        if ((unsigned long int)result->bits[1] != 4294967295)
-            result->bits[1] += 1;
-        else {
-            result->bits[1] = 0;
-            result->bits[2] += 1;
-        }
+      result->bits[1] = 0;
+      result->bits[2] += 1;
     }
+  }
 }

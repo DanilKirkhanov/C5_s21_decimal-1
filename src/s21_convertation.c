@@ -154,18 +154,18 @@ int s21_GetBitToFloat(double number, int bit_number) {
 }
 
 void s21_scaleEqul(s21_decimal *value_1, s21_decimal *value_2) {
-    int scale_diff = s21_getScale(*value_1) - s21_getScale(*value_2);
-    if (scale_diff > 0) {
-        for (int i = 0; i < scale_diff; i++) {
-           *value_2 = s21_div_integer(*value_2, 10);
-        }
-        s21_setScale(value_2, s21_getScale(*value_1));
-    } else if (scale_diff < 0) {
-        for (int i = 0; i < -scale_diff; i++) {
-           *value_1 = s21_div_integer(*value_1, 10);
-        }
-        s21_setScale(value_1, s21_getScale(*value_2));
+  int scale_diff = s21_getScale(*value_1) - s21_getScale(*value_2);
+  if (scale_diff > 0) {
+    for (int i = 0; i < scale_diff; i++) {
+      *value_2 = s21_div_integer(*value_2, 10);
     }
+    s21_setScale(value_2, s21_getScale(*value_1));
+  } else if (scale_diff < 0) {
+    for (int i = 0; i < -scale_diff; i++) {
+      *value_1 = s21_div_integer(*value_1, 10);
+    }
+    s21_setScale(value_1, s21_getScale(*value_2));
+  }
 }
 
 int s21_equalWithoutSign(s21_decimal value_1, s21_decimal value_2) {
@@ -208,7 +208,7 @@ int s21_less_without_mod(s21_decimal dec_1, s21_decimal dec_2) {
 
 s21_decimal s21_div_integer(s21_decimal src, int div) {
   s21_decimal res = {{0, 0, 0, 0}};
-  //s21_null_decimal(&res);
+  // s21_null_decimal(&res);
   long unsigned int remainder = src.bits[2] % div;  // остаток
   res.bits[2] = src.bits[2] / div;
   for (int i = 1; i >= 0; i--) {
