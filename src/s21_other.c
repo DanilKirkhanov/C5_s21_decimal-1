@@ -26,13 +26,13 @@ int s21_floor(s21_decimal value, s21_decimal* result) {
       *result = value;
     else {
       s21_truncate(value, result);
-      if (get_bit(value, 127)) s21_add_1(result);  // вычитание 1;
+      if (get_bit(value, 127)) s21_add_1_(result);  // вычитание 1;
     }
   }
   return err;
 }
 
-void s21_add_1(s21_decimal* result) {
+void s21_add_1_(s21_decimal* result) {
   if ((unsigned long int)result->bits[0] != 4294967295)
     result->bits[0] += 1;
   else {
