@@ -1,5 +1,5 @@
-
 #include "s21_decimal.h"
+
 int s21_negate(s21_decimal value, s21_decimal* result) {
   if (!result) return 1;
   *result = value;
@@ -45,7 +45,6 @@ void s21_add_1_(s21_decimal* result) {
     }
   }
 }
-
 
 int s21_round(s21_decimal value, s21_decimal* result) {
   int err = 0;
