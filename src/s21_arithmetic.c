@@ -12,15 +12,18 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
     s21_levelling(&value_1, &value_2);
     if (sign1 == sign2) {
       *result = s21_binary_additional(value_1, value_2, &code_result);
+      result->bits[3] = value_1.bits[3];
     } else {
       if (sign1) s21_change_sign(&value_1);
       if (sign2) s21_change_sign(&value_2);
       if (s21_is_greater_or_equal(value_1, value_2)) {
         *result = s21_binary_sub(value_1, value_2, &code_result);
+        result->bits[3] = value_1.bits[3];
         if (sign1) s21_change_sign(result);
       } else {
         *result = s21_binary_sub(value_2, value_1,
                                  &code_result);  // SUBTRACTION FUNCTION
+        result->bits[3] = value_1.bits[3];
         if (sign2) s21_change_sign(result);
       }
     }
@@ -76,8 +79,10 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
       if (sign1) {
         if (s21_is_less_or_equal(value_1, value_2)) {
           *result = s21_binary_sub(value_1, value_2, &code_result);
+          result->bits[3] = value_1.bits[3];
         } else {
           *result = s21_binary_sub(value_2, value_1, &code_result);
+          result->bits[3] = value_1.bits[3];
           s21_change_sign(result);
         }
       } else {
@@ -85,14 +90,18 @@ int s21_sub(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
           *result = s21_binary_sub(value_1, value_2, &code_result);
         else {
           *result = s21_binary_sub(value_2, value_1, &code_result);
+
           s21_change_sign(result);
         }
       }
     } else {
-      if (sign1)
+      if (sign1) {
         *result = s21_binary_additional(value_1, value_2, &code_result);
-      else
+        result->bits[3] = value_1.bits[3];
+      } else {
         *result = s21_binary_additional(value_1, value_2, &code_result);
+        result->bits[3] = value_1.bits[3];
+      }
     }
   }
   return code_result;
