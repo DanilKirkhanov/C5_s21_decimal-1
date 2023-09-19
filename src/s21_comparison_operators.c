@@ -13,8 +13,7 @@ int s21_is_equal(s21_decimal dec_1, s21_decimal dec_2) {
       s21_double_to_decimal(dec_2, &double_dec_2);
       s21_double_common_denominator(&double_dec_1, &double_dec_2);
       for (int i = 0; i < 3 && equal; i++) {
-        if ((double_dec_1.bits[i] ^ double_dec_2.bits[i]) != 0)
-          equal = 0;
+        if ((double_dec_1.bits[i] ^ double_dec_2.bits[i]) != 0) equal = 0;
       }
     }
   }

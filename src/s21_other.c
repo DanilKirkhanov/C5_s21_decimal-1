@@ -26,24 +26,10 @@ int s21_floor(s21_decimal value, s21_decimal* result) {
       *result = value;
     else {
       s21_truncate(value, result);
-      if (get_bit(value, 127)) s21_add_1_(result);  // вычитание 1;
+      if (get_bit(value, 127)) s21_add_1_(result);
     }
   }
   return err;
-}
-
-void s21_add_1_(s21_decimal* result) {
-  if ((unsigned long int)result->bits[0] != 4294967295)
-    result->bits[0] += 1;
-  else {
-    result->bits[0] = 0;
-    if ((unsigned long int)result->bits[1] != 4294967295)
-      result->bits[1] += 1;
-    else {
-      result->bits[1] = 0;
-      result->bits[2] += 1;
-    }
-  }
 }
 
 int s21_round(s21_decimal value, s21_decimal* result) {
@@ -53,9 +39,6 @@ int s21_round(s21_decimal value, s21_decimal* result) {
   else {
     int sign = s21_get_sign(value);
     s21_setBit(&value, 127, 0);
-    // s21_decimal five = {{5, 0, 0, 0}};
-    // s21_set_scale(&five, 1);
-    // s21_decimal one = {{1, 0, 0, 0}};
     s21_decimal trun = {{0, 0, 0, 0}};
     s21_decimal sub_dec = {{0, 0, 0, 0}};
 
@@ -65,31 +48,9 @@ int s21_round(s21_decimal value, s21_decimal* result) {
     if (sub_dec.bits[0] >= 5) s21_add_1_(&trun);
     *result = trun;
     if (sign)
-      result->bits[3] =
-          0x80000000;  // зануляем скейл и ставим отрицательный знак
+      result->bits[3] = 0x80000000;
     else
-      result->bits[3] = 0;  // зануляем скейл, оставляется положительный знак
+      result->bits[3] = 0;
   }
   return err;
 }
-
-// int main() {
-//   s21_decimal src1, src2, result, origin;
-//   int value_type_result, value_type_origin;
-//   // src1 = -545454512454545.35265454545645;
-//   // src2 = 54564654;
-//   src1.bits[0] = 0b10000010111000100101101011101101;
-//   src1.bits[1] = 0b11111001111010000010010110101101;
-//   src1.bits[2] = 0b10110000001111101111000010010100;
-//   src1.bits[3] = 0b10000000000011100000000000000000;
-//   src2.bits[0] = 0b00000011010000001001011100101110;
-//   src2.bits[1] = 0b00000000000000000000000000000000;
-//   src2.bits[2] = 0b00000000000000000000000000000000;
-//   src2.bits[3] = 0b00000000000000000000000000000000;
-
-//   origin.bits[0] = 0b01111111101000011100001110111111;
-//   origin.bits[1] = 0b11111001111010000010010110101101;
-//   origin.bits[2] = 0b10110000001111101111000010010100;
-//   origin.bits[3] = 0b10000000000011100000000000000000;
-//   value_type_result = s21_add(src1, src2, &result);
-// }

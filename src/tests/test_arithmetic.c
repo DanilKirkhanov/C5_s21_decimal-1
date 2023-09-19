@@ -1609,8 +1609,6 @@ START_TEST(s21_sub_30) {
 }
 END_TEST
 
-
-
 START_TEST(s21_div_2) {
   s21_decimal src1, src2, result;
   int a = 32768;
@@ -1643,8 +1641,6 @@ START_TEST(s21_div_3) {
 }
 END_TEST
 
-
-
 START_TEST(s21_div_5) {
   s21_decimal src1, src2, result, origin;
   // 0
@@ -1672,8 +1668,6 @@ START_TEST(s21_div_5) {
 }
 END_TEST
 
-
-
 START_TEST(s21_div_8) {
   s21_decimal src1, src2, result;
 
@@ -1691,8 +1685,6 @@ START_TEST(s21_div_8) {
   ck_assert_int_eq(check, check_origin);
 }
 END_TEST
-
-
 
 START_TEST(s21_div_11) {
   s21_decimal src1, src2, result;
@@ -1715,8 +1707,6 @@ START_TEST(s21_div_11) {
   ck_assert_int_eq(result.bits[0], 0x00002B32);
 }
 END_TEST
-
-
 
 START_TEST(s21_div_14) {
   s21_decimal val1 = {{2, 0, 0, 0}};
@@ -2169,8 +2159,6 @@ START_TEST(s21_mul_16) {
 }
 END_TEST
 
-
-
 START_TEST(s21_mul_18) {
   s21_decimal src1, src2, origin, result;
   int value_type_result, value_type_origin;
@@ -2224,8 +2212,6 @@ START_TEST(s21_mul_19) {
   ck_assert_int_eq(value_type_result, value_type_origin);
 }
 END_TEST
-
-
 
 START_TEST(s21_mul_23) {
   s21_decimal val1 = {{2, 0, 0, 0}};

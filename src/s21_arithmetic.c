@@ -1,6 +1,5 @@
 #include "s21_decimal.h"
 
-
 int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
   s21_code_result code_result = S21_RESULT_OK;
 
@@ -22,8 +21,7 @@ int s21_add(s21_decimal value_1, s21_decimal value_2, s21_decimal *result) {
         result->bits[3] = value_1.bits[3];
         if (sign1) s21_change_sign(result);
       } else {
-        *result = s21_binary_sub(value_2, value_1,
-                                 &code_result);  // SUBTRACTION FUNCTION
+        *result = s21_binary_sub(value_2, value_1, &code_result);
         result->bits[3] = value_1.bits[3];
         if (sign2) s21_change_sign(result);
       }

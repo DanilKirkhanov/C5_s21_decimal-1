@@ -1,22 +1,5 @@
 #include "s21_decimal.h"
 
-void printf_decimal(s21_decimal dec) {
-  for (int j = 3; 0 <= j; j--) {
-    int src = dec.bits[j];
-    if (j == 3)
-      printf("scale) ");
-    else if (j == 2)
-      printf("mantisa) ");
-    for (int i = 1; i <= 32; i++) {
-      printf("%c", (src & 0x80000000) ? '1' : '0');
-      if (j == 3 && (i == 8 || i == 16 || i == 32)) printf(" ");
-      // else if (i % 4 == 0 && !(i == 32 && j == 0) && j != 3)
-      //   printf(" ");
-      src <<= 1;
-    }
-  }
-  printf("\n");
-}
 int get_bit(s21_decimal src, int index) {
   int bits = src.bits[index / 32];
   int mask = 1;
@@ -46,24 +29,6 @@ int get_scale(s21_decimal src) {
   return (unsigned char)src.bits[3];
 }
 
-void printf_binary(int src) {
-  for (int i = 1; i <= 32; i++) {
-    printf("%c", (src & 0x80000000) ? '1' : '0');
-    if (i % 4 == 0) printf(" ");
-    src <<= 1;
-  }
-  printf("\n");
-}
-
-void printf_long_binary(long int src) {
-  for (int i = 1; i <= 64; i++) {
-    printf("%c", (src & 0x8000000000000000) ? '1' : '0');
-    if (i % 4 == 0) printf(" ");
-    src <<= 1;
-  }
-  printf("\n");
-}
-
 void div_by_10(s21_decimal *src, int scale) {
   s21_set_scale(src, get_scale(*src) - scale);
   for (; scale != 0; scale--) {
@@ -78,19 +43,6 @@ void div_by_10(s21_decimal *src, int scale) {
 
 int s21_Double_GetSign(s21_double_decimal value) {
   return (value.bits[5] >> 31);
-}
-
-int s21_Equate_Double_ToDecimal(s21_decimal value,
-                                s21_double_decimal *double_value) {
-  int error = 0;
-  if (double_value) {
-    double_value->bits[0] = value.bits[0];
-    double_value->bits[1] = value.bits[1];
-    double_value->bits[2] = value.bits[2];
-    double_value->bits[5] = value.bits[3];  // степень и знак
-  } else
-    error = 1;
-  return error;
 }
 
 void s21_Double_SubScale(s21_double_decimal *value) { value->bits[5] += 1; }
@@ -146,36 +98,6 @@ s21_double_decimal s21_Double_Summ(s21_double_decimal double_value_1,
   return value;
 }
 
-int s21_Double_CommonDenominator(s21_double_decimal *value_1,
-                                 s21_double_decimal *value_2) {
-  int error = 0;
-  int sign_1 = s21_Double_GetSign(*value_1);
-  int sign_2 = s21_Double_GetSign(*value_2);
-  if (sign_1 != sign_2)
-    sign_1 == 1 ? s21_Double_SetSign(value_1, 0)
-                : s21_Double_SetSign(value_2, 0);
-  if (value_1->bits[5] != value_2->bits[5]) {
-    if (value_1->bits[5] > value_2->bits[5])
-      s21_Double_CommonDenominator(value_2, value_1);
-    else {
-      value_1->bits[5] = value_1->bits[5] >> 16;
-      value_2->bits[5] = value_2->bits[5] >> 16;
-      while (value_1->bits[5] != value_2->bits[5]) {
-        s21_Double_SubScale(value_1);
-        s21_double_decimal one = s21_Double_ShiftLeft(*value_1, 3);
-        s21_double_decimal two = s21_Double_ShiftLeft(*value_1, 1);
-        *value_1 = s21_Double_Summ(one, two);
-      }
-      value_1->bits[5] = value_1->bits[5] << 16;
-      value_2->bits[5] = value_2->bits[5] << 16;
-    }
-  }
-  if (sign_1 != sign_2)
-    sign_1 == 1 ? s21_Double_SetSign(value_1, 1)
-                : s21_Double_SetSign(value_2, 1);
-  return error;
-}
-
 s21_decimal s21_binary_additional(s21_decimal value1, s21_decimal value2,
                                   s21_code_result *code_result) {
   while (!s21_is_decimal_zero(value2)) {
@@ -190,8 +112,8 @@ int s21_help_multiply(s21_decimal value_1, s21_decimal value_2,
                       s21_decimal *result) {
   s21_code_result code_result = S21_RESULT_OK;
   int scale = (s21_get_scale(value_1) + s21_get_scale(value_2)) << 16;
-  value_1.bits[3] = 0;  // s21_set_zeroes_bits3(value_1);
-  value_2.bits[3] = 0;  // s21_set_zeroes_bits3(value_2);
+  value_1.bits[3] = 0;
+  value_2.bits[3] = 0;
   code_result = s21_binary_multiplication(value_1, value_2, result);
   result->bits[3] = scale;
   if (scale > 28) code_result = S21_RESULT_TOOSMALL;
@@ -239,7 +161,7 @@ s21_decimal s21_binary_division(s21_decimal value_1, s21_decimal value_2,
     if (s21_needs_for_division(remains, value_2)) {
       result =
           s21_int128_binary_or(result, s21_shift_left(one, i, code_result));
-      remains = s21_binary_sub(remains, value_2, code_result);  // SUBTRACTION
+      remains = s21_binary_sub(remains, value_2, code_result);
     }
   }
   return result;
@@ -304,12 +226,19 @@ int s21_getScale(s21_decimal dec) {
   return result;
 }
 
-void s21_setScaleToZero(s21_decimal *number) {
-  int firstElement = (number->bits[0]);
-  int scaleMask = 0xFF0000;
-  firstElement = firstElement & (~scaleMask);
+void s21_add_1_(s21_decimal *result) {
+  if ((unsigned long int)result->bits[0] != 4294967295)
+    result->bits[0] += 1;
+  else {
+    result->bits[0] = 0;
+    if ((unsigned long int)result->bits[1] != 4294967295)
+      result->bits[1] += 1;
+    else {
+      result->bits[1] = 0;
+      result->bits[2] += 1;
+    }
+  }
 }
-
 void s21_ZeroDecimal(s21_decimal *dst) {
   dst->bits[0] = 0;
   dst->bits[1] = 0;
@@ -321,79 +250,6 @@ int s21_GetBitToFloat(double number, int bit_number) {
   for (int i = 0; i < bit_number; i++) number = floor(number / 2);
   result = (int)fmod(number, 2.0);
   return result;
-}
-
-void s21_scaleEqul(s21_decimal *value_1, s21_decimal *value_2) {
-  int scale_diff = s21_getScale(*value_1) - s21_getScale(*value_2);
-  if (scale_diff > 0) {
-    for (int i = 0; i < scale_diff; i++) {
-      *value_2 = s21_div_integer(*value_2, 10);
-    }
-    s21_setScale(value_2, s21_getScale(*value_1));
-  } else if (scale_diff < 0) {
-    for (int i = 0; i < -scale_diff; i++) {
-      *value_1 = s21_div_integer(*value_1, 10);
-    }
-    s21_setScale(value_1, s21_getScale(*value_2));
-  }
-}
-
-int s21_equalWithoutSign(s21_decimal value_1, s21_decimal value_2) {
-  int res;
-  if (value_1.bits[2] != value_2.bits[2]) {
-    res = 0;
-  } else if (value_1.bits[1] != value_2.bits[1]) {
-    res = 0;
-  } else if (value_1.bits[0] != value_2.bits[0]) {
-    res = 0;
-  } else {
-    res = 1;
-  }
-  return res;
-}
-
-int s21_less_without_mod(s21_decimal dec_1, s21_decimal dec_2) {
-  int result;
-  if (dec_1.bits[0] < dec_2.bits[0]) {
-    result = 1;
-  } else if (dec_1.bits[0] > dec_2.bits[0]) {
-    result = 0;
-  } else {
-    if (dec_1.bits[1] < dec_2.bits[1]) {
-      result = 1;
-    } else if (dec_1.bits[1] > dec_2.bits[1]) {
-      result = 0;
-    } else {
-      if (dec_1.bits[2] < dec_2.bits[2]) {
-        result = 1;
-      } else if (dec_1.bits[2] > dec_2.bits[2]) {
-        result = 0;
-      } else {
-        result = 0;
-      }
-    }
-  }
-  return result;
-}
-
-s21_decimal s21_div_integer(s21_decimal src, int div) {
-  s21_decimal res = {{0, 0, 0, 0}};
-  // s21_null_decimal(&res);
-  long unsigned int remainder = src.bits[2] % div;  // остаток
-  res.bits[2] = src.bits[2] / div;
-  for (int i = 1; i >= 0; i--) {
-    long unsigned int tempbit =
-        (long unsigned int)src.bits[i] +
-        (remainder * pow(2, 32));  // временный младший бит чтобы не было
-                                   // переполнения при добавлении остатка
-    remainder = tempbit % div;
-    tempbit -= remainder;  // округяем чтобы при делении на 10 число не
-                           // округлилось до большего
-    res.bits[i] = tempbit / div;
-  }
-  res.bits[0] += remainder / div;
-  res.bits[3] = src.bits[3];
-  return res;
 }
 
 s21_decimal s21_set_zeroes() {
@@ -441,19 +297,6 @@ s21_decimal s21_int128_binary_or(s21_decimal decimal1, s21_decimal decimal2) {
   return result;
 }
 
-void printf_dec(s21_decimal result) {
-  printf("Decimal is %d %d %d %d\n", result.bits[3], result.bits[2],
-         result.bits[1], result.bits[0]);
-}
-
-void printf_dec_binary(s21_decimal result) {
-  for (int i = 127; i >= 0; i--) {
-    printf("%d", s21_get_bit(result.bits[i / 32], i));
-    if (i % 32 == 0) printf(" | ");
-  }
-  printf("\n");
-}
-
 int s21_get_sign(s21_decimal value) { return value.bits[3] >> 31; }
 
 s21_decimal s21_change_sign(s21_decimal *value) {
@@ -462,13 +305,6 @@ s21_decimal s21_change_sign(s21_decimal *value) {
 }
 
 int s21_set_bit(int value, int bit_pos) { return value | (1U << bit_pos); }
-
-int s21_set_zero_bit(int value, int bit_pos) { return value | (0U << bit_pos); }
-
-int s21_get_bit(int val_check, int position) {
-  int get_bit = (val_check >> position) & 1U;
-  return get_bit;
-}
 
 int s21_is_decimal_zero(s21_decimal value) {
   int zero = FALSE;
@@ -526,10 +362,8 @@ int s21_levelling(s21_decimal *value_1, s21_decimal *value_2) {
     *value_1 = s21_set_zeroes();
     *value_2 = s21_set_zeroes();
     s21_make_equal(decimalOne, value_1);
-    // if (sign1) s21_set_bit(value_1->bits[3], 31);
     s21_set_scale(value_1, scale_res);
     s21_make_equal(decimalTwo, value_2);
-    // if (sign2) s21_set_bit(value_2->bits[3], 31);
     s21_set_scale(value_2, scale_res);
   }
   return ret;
@@ -684,35 +518,6 @@ int s21_double_getSign(s21_double_decimal value) {
   return (value.bits[5] >> 31);
 }
 
-s21_double_decimal s21_double_shiftLeft(s21_double_decimal value, int inex) {
-  for (int i = 4; i != -1; i--) {
-    int remain = 0;
-    if (i != 0 && ((value.bits[i - 1] >> (32 - inex)) != 0))
-      remain = value.bits[i - 1] >> (32 - inex);
-    value.bits[i] = (value.bits[i] << inex) | remain;
-  }
-  return value;
-}
-
-int s21_double_get_bit(s21_double_decimal dec, int index) {
-  int error = -1;
-  if (index >= 0 && index <= 191) {
-    int num_int = index / 32;
-    int num_bit = index % 32;
-    error = !!(dec.bits[num_int] & (1u << num_bit));
-  }
-  return error;
-}
-
-void s21_double_set_bit(s21_double_decimal *dec, int index, int bit) {
-  int num_int = index / 32;
-  int num_bit = index % 32;
-  if (bit == 1)
-    dec->bits[num_int] |= (1u << num_bit);
-  else
-    dec->bits[num_int] &= (~((1u) << num_bit));
-}
-
 int s21_double_common_denominator(s21_double_decimal *value_1,
                                   s21_double_decimal *value_2) {
   int error = 0;
@@ -743,23 +548,13 @@ int s21_double_common_denominator(s21_double_decimal *value_1,
   return error;
 }
 
-void s21_double_sub_scale(s21_double_decimal *value) { value->bits[5] += 1; }
-
-void s21_double_set_sign(s21_double_decimal *value, int bit) {
-  unsigned number = 1;
-  if (bit == 0)
-    value->bits[5] = ~(~value->bits[5] | number << 31);
-  else
-    value->bits[5] = value->bits[5] | number << 31;
-}
-
 int s21_double_to_decimal(s21_decimal value, s21_double_decimal *double_value) {
   int error = 0;
   if (double_value) {
     double_value->bits[0] = value.bits[0];
     double_value->bits[1] = value.bits[1];
     double_value->bits[2] = value.bits[2];
-    double_value->bits[5] = value.bits[3];  // степень и знак
+    double_value->bits[5] = value.bits[3];
   } else
     error = 1;
   return error;
