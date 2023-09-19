@@ -40,7 +40,7 @@ clean:
 	@-rm -rf *.o string test *.a *res *.info *.gcda *.gcno
 
 style:
-	@clang-format --style=Google -i *.c *.h
+	@clang-format --style=Google -n *.c *.h
 
 .PHONY:
 	all test clean s21_math gcov_report
